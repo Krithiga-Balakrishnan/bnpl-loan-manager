@@ -1,4 +1,3 @@
-// resources/js/ui/toast.js
 export function showSuccess(message) {
   const toast = document.getElementById('successToast');
   if (!toast) return;

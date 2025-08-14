@@ -1,4 +1,3 @@
-// resources/js/api/index.js
 import axios from "axios";
 
 const token = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';

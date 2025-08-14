@@ -13,7 +13,6 @@ use App\Http\Requests\PayInstallmentRequest;
 
 class PaymentController extends Controller
 {
-    // public function pay(Installment $installment)
     public function pay(PayInstallmentRequest $request, $id)
     {
 try {
@@ -21,7 +20,6 @@ try {
         $inst = null;
 
         DB::transaction(function () use ($id, &$loan, &$inst) {
-            // Lock the installment row
             $inst = Installment::lockForUpdate()->findOrFail($id);
 
             if ($inst->status !== 'pending') {
@@ -37,26 +35,12 @@ try {
                     'paid_at' => now()
                 ]);
 
-                // PaymentTransaction::create([
-                //     'installment_id' => $inst->id,
-                //     'amount'         => $inst->amount,
-                //     'processed_at'   => now(),
-                //     'status'         => 'success',
-                // ]);
-
-                // $loan = $inst->loan->fresh(['installments']);
-
-                // if ($loan->installments->where('status', 'pending')->isEmpty()) {
-                //     $loan->update(['status' => 'completed']);
-                //     event(new \App\Events\LoanCompleted($loan));
-                // }
-
                 $payment = PaymentTransaction::create([
-        'installment_id' => $inst->id,
-        'amount'         => $inst->amount,
-        'processed_at'   => now(),
-        'status'         => 'success',
-    ]);
+                    'installment_id' => $inst->id,
+                    'amount'         => $inst->amount,
+                    'processed_at'   => now(),
+                    'status'         => 'success',
+                ]);
 
     $loan = $inst->loan->fresh(['installments']);
 
@@ -84,7 +68,7 @@ try {
 
         return response()->json([
             'message' => 'Installment paid',
-            'loan' => $loan, // full loan with updated installments
+            'loan' => $loan, 
             'installment' => [
                 'amount'       => $inst->amount,
                 'processed_at' => now()->toDateTimeString(),

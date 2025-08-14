@@ -1,4 +1,3 @@
-// resources/js/forms/customerForm.js
 import { createCustomer, updateCustomerApi, fetchCustomers } from '../api';
 import { renderCustomers } from '../tables/customersTable';
 import { showError, showSuccess } from '../ui/toast';
@@ -8,7 +7,7 @@ export function setupCustomerForm() {
   const searchInput = document.getElementById('searchCustomer');
   let allCustomers = [];
 
-  // Pre-fill when clicking "Edit"
+  // "Edit"
   document.addEventListener('click', (e) => {
     if (!e.target.classList.contains('edit-customer-btn')) return;
     form.name.value = e.target.getAttribute('data-name');
@@ -20,7 +19,6 @@ export function setupCustomerForm() {
     form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
   });
 
-  // Open loan modal with selected customer
   document.addEventListener('click', (e) => {
     if (!e.target.classList.contains('open-loan-form-btn')) return;
     const customerId = e.target.getAttribute('data-customer-id');
@@ -36,7 +34,7 @@ export function setupCustomerForm() {
   // Submit (create/update)
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // clear old validation messages
+    //clears the previous validation message
     form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
 
@@ -74,7 +72,6 @@ export function setupCustomerForm() {
         const modal = bootstrap.Modal.getInstance(document.getElementById('customerFormModal'));
         modal?.hide();
 
-        // refresh list
         const res = await fetchCustomers();
         allCustomers = res.customers || [];
         renderCustomers(allCustomers);
@@ -94,7 +91,6 @@ export function setupCustomerForm() {
     }
   });
 
-  // search filter
   searchInput?.addEventListener('input', () => {
     const q = searchInput.value.toLowerCase();
     const filtered = (allCustomers || []).filter(c =>

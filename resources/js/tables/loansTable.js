@@ -1,4 +1,3 @@
-// resources/js/tables/loansTable.js
 import { state } from '../state';
 import { payInstallment, updateLoanStatus } from '../api';
 import { showError } from '../ui/toast';
@@ -45,7 +44,7 @@ export function renderLoanTable(loans) {
         <td class="loan-status">${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}</td>
         <td class="next-due">${nextDue}</td>
         <td>
-          <button class="btn btn-sm btn-success pay-btn" ${loan.status !== 'active' ? 'style="display:none;"' : ''}>Pay Next</button>
+          <button class="btn btn-sm btn-success pay-btn" data-installment-id="${loan.next_installment_id || ''}"  ${loan.status !== 'active' ? 'style="display:none;"' : ''}>Pay Next</button>
           <select class="form-select form-select-sm d-inline-block status-select" style="width:auto;" disabled>
             <option value="active" ${loan.status === 'active' ? 'selected' : ''}>Active</option>
             <option value="completed" ${loan.status === 'completed' ? 'selected' : ''}>Completed</option>
@@ -56,34 +55,40 @@ export function renderLoanTable(loans) {
       </tr>
     `);
   });
+  const table = loansTable();
+const currentPageSize = state.dataTable?.options?.perPage || 10;
 
-  // refresh DataTable keeping perPage
-  if (state.dataTable) {
-    const perPage = state.dataTable.options.perPage;
+if (state.dataTable) {
     state.dataTable.destroy();
-    state.dataTable = new simpleDatatables.DataTable("#loansTable", {
-      searchable: false,
-      perPage,
-      labels: {
-        perPage: "rows per page",
-        noRows: "No loans found",
-        info: "Showing {start} to {end} of {rows} loans"
-      }
-    });
   }
+
+  state.dataTable = new simpleDatatables.DataTable(table, {
+    searchable: false,
+    perPage: currentPageSize,
+    pagination: true,
+    labels: {
+      perPage: "rows per page",
+      noRows: "No loans found",
+      info: "Showing {start} to {end} of {rows} loans"
+    }
+  });
+
 }
 
 export function updateLoanRow(loan) {
   const idx = state.allLoans.findIndex(l => l.id === loan.id);
-  const normalized = {
-    id: loan.id,
-    status: loan.status,
-    amount: loan.amount,
-    paid_count: loan.paid_count ?? (loan.installments_paid ?? 0),
-    total_installments: loan.total_installments ?? (loan.installments_total ?? 0),
-    paid_sum: loan.paid_sum ?? (loan.total_paid ?? 0),
-    next_due: loan.next_due ?? 'N/A'
-  };
+const normalized = {
+  id: loan.id,
+  loan_id: loan.loan_id ?? loan.id,
+  customer_name: loan.customer_name ?? '',
+  status: loan.status,
+  amount: loan.amount,
+  paid_count: loan.paid_count ?? (loan.installments_paid ?? 0),
+  total_installments: loan.total_installments ?? (loan.installments_total ?? 0),
+  paid_sum: loan.paid_sum ?? (loan.total_paid ?? 0),
+  next_due: loan.next_due ?? 'N/A',
+  next_installment_id: loan.next_installment_id ?? null
+};
 
   if (idx >= 0) state.allLoans[idx] = normalized;
   else state.allLoans.push(normalized);
@@ -111,28 +116,36 @@ export function updateLoanRow(loan) {
   }
 }
 
+
 export function attachLoansTableEvents(onChartsRefresh, onFilterRefresh) {
-  const table = document.getElementById('loansTable');
-  table.addEventListener('click', async (e) => {
+const container = document.getElementById('loansTableContainer');
+if (!container) return;
+    container.addEventListener('click', async (e) => {
     const tr = e.target.closest('tr');
     if (!tr) return;
     const loanId = tr.dataset.loanId;
 
-    // Pay Next
+    // Pay Next button
     if (e.target.classList.contains('pay-btn')) {
-      try {
-        const res = await payInstallment(e.target.dataset.installmentId);
-        if (res?.loan) {
-          updateLoanRow(res.loan);
-          onChartsRefresh();
-          onFilterRefresh?.();
-        }
-      } catch (err) {
-        showError(err?.response?.data?.message || 'Error paying installment');
-      }
+      const installmentId = e.target.dataset.installmentId;
+      if (!installmentId) {
+    showError('No installment to pay');
+    return;
+  }
+
+     try {
+    const res = await payInstallment(installmentId);
+    if (res?.loan) {
+      updateLoanRow(res.loan);
+      onChartsRefresh?.();
+      onFilterRefresh?.();
+    }
+  } catch (err) {
+    showError(err?.response?.data?.message || 'Error paying installment');
+  }
     }
 
-    // Edit/Update
+    // Edit / Update button
     if (e.target.classList.contains('edit-update-btn')) {
       const btn = e.target;
       const select = tr.querySelector('.status-select');
@@ -141,8 +154,10 @@ export function attachLoansTableEvents(onChartsRefresh, onFilterRefresh) {
         select.disabled = false;
         select.focus();
         btn.textContent = 'Update';
-        // disable other edit buttons while updating
-        document.querySelectorAll('.edit-update-btn').forEach(b => { if (b !== btn) b.disabled = true; });
+
+        document.querySelectorAll('.edit-update-btn').forEach(b => {
+          if (b !== btn) b.disabled = true;
+        });
       } else {
         try {
           const res = await updateLoanStatus(loanId, select.value);
@@ -150,8 +165,10 @@ export function attachLoansTableEvents(onChartsRefresh, onFilterRefresh) {
             updateLoanRow(res.loan);
             select.disabled = true;
             btn.textContent = 'Edit';
+
             document.querySelectorAll('.edit-update-btn').forEach(b => b.disabled = false);
-            onChartsRefresh();
+
+            onChartsRefresh?.();
             onFilterRefresh?.();
           }
         } catch {
@@ -163,16 +180,26 @@ export function attachLoansTableEvents(onChartsRefresh, onFilterRefresh) {
 }
 
 export function filterLoans() {
-  const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-  const searchTerm = document.getElementById('searchLoan').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter')?.value.toLowerCase() || '';
+  const searchTerm = document.getElementById('searchLoan')?.value.toLowerCase() || '';
 
-  const filtered = state.allLoans.filter(loan => {
-    const matchesStatus = !statusFilter || loan.status.toLowerCase() === statusFilter;
+  state.filteredLoans = state.allLoans.filter(loan => {
+    const matchesStatus = !statusFilter || loan.status?.toLowerCase() === statusFilter;
     const matchesSearch =
-      String(loan.id).toLowerCase().includes(searchTerm) ||
-      String(loan.amount).toLowerCase().includes(searchTerm);
+      String(loan.id).includes(searchTerm) ||
+      String(loan.amount).includes(searchTerm) ||
+      loan.customer_name?.toLowerCase().includes(searchTerm) ||
+      String(loan.loan_id).includes(searchTerm);
+
     return matchesStatus && matchesSearch;
   });
 
-  renderLoanTable(filtered);
+  renderLoanTable(state.filteredLoans);
+  attachLoansTableEvents(); 
 }
+document.getElementById('clearFilters')?.addEventListener('click', () => {
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('searchLoan').value = '';
+  filterLoans();
+});
+

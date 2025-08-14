@@ -1,4 +1,3 @@
-// resources/js/tables/customersTable.js
 export function renderCustomers(customers) {
   const body = document.getElementById('customersTableBody');
   body.innerHTML = '';

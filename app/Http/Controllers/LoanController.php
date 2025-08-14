@@ -48,7 +48,6 @@ class LoanController extends Controller
                     ]);
                 }
 
-                // Push into collection for later event firing
                 $loans[] = $loan->load('installments');
             }
         });
