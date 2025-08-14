@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(e);
                 const loans = e.loans || (e.loan ? [e.loan] : []);
                 loans.forEach(l => updateLoanRow(l));
+                refreshCharts();
                 console.groupEnd();
             } catch (err) {
                 console.error('Error processing LoanGenerated:', err);
@@ -154,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.group('InstallmentPaid Event');
                 console.log(e);
                 updateLoanRow(e.loan);
+                refreshCharts();
                 console.groupEnd();
             } catch (err) {
                 console.error('Error processing InstallmentPaid:', err);
@@ -165,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.group('LoanCompleted Event');
                 console.log(e);
                 updateLoanRow(e.loan);
+                refreshCharts();
                 console.groupEnd();
             } catch (err) {
                 console.error('Error processing LoanCompleted:', err);
@@ -176,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.group('LoanStatusUpdated Event');
                 console.log(e);
                 updateLoanRow(e.loan);
+                refreshCharts();
                 console.groupEnd();
             } catch (err) {
                 console.error('Error processing LoanStatusUpdated:', err);

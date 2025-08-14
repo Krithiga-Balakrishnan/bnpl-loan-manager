@@ -1,0 +1,130 @@
+:root {
+  --bg-soft:#f6f8fb;
+  --card-radius:1rem;
+}
+body { background:var(--bg-soft); }
+.page-header {
+  background:linear-gradient(135deg,#eef3ff, #f8fbff);
+  border:1px solid #eef1f6;
+  border-radius:var(--card-radius);
+  padding:1.25rem 1rem;
+}
+.card {
+  border:none;
+  border-radius:var(--card-radius);
+  box-shadow: 0 6px 14px rgba(18,38,63,.06);
+}
+.btn-soft {
+  border-radius:.75rem;
+  box-shadow:0 3px 10px rgba(0,0,0,.05);
+}
+.table thead th {
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:#fff;
+}
+.badge-rounded {
+  padding:.5rem .75rem;
+  border-radius:2rem;
+  font-weight:600;
+}
+.badge-active { background:#e9f3ff; color:#0d6efd; }
+.badge-completed { background:#eaf7f0; color:#198754; }
+.badge-cancelled { background:#fdecec; color:#dc3545; }
+.toolbar-gap>* { margin-right:.5rem; }
+@media (max-width: 575.98px) {
+  .toolbar-gap { gap:.5rem; }
+}
+
+
+
+/* Loan Modal shell */
+.loan-modal {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 20px 50px rgba(8, 21, 66, 0.15);
+  overflow: hidden;
+}
+
+/* Header gradient + avatar */
+.loan-modal .modal-header {
+  background: linear-gradient(135deg, #eef3ff, #f8fbff);
+}
+.loan-modal .modal-title { color: #0b2e62; }
+.modal-avatar {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  color: #0d6efd;
+  box-shadow: 0 6px 14px rgba(13, 110, 253, .15);
+  font-size: 1.25rem;
+}
+
+/* Inputs */
+.modern-input,
+.input-group.modern-input .form-control {
+  border: 1px solid #e6e9f2;
+  border-radius: 0.75rem;
+  padding: .7rem .9rem;
+  background: #fbfcfe;
+  transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+.input-group.modern-input .input-group-text {
+  border: 1px solid #e6e9f2;
+  border-right: 0;
+  border-radius: 0.75rem 0 0 0.75rem;
+  background: #fff;
+}
+.modern-input:focus,
+.input-group.modern-input .form-control:focus {
+  border-color: #cfe2ff;
+  background: #fff;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.12);
+}
+
+/* Alert soft style */
+.soft-alert {
+  border: 1px dashed #b6d4fe;
+  background: #f1f6ff;
+  border-radius: .75rem;
+}
+
+/* Rounded submit */
+.btn.rounded-pill { border-radius: 999px !important; }
+
+
+/* customer registration modal */
+.modal-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  font-size: 1.25rem;
+  color: #0d6efd;
+}
+
+.soft-alert {
+  background: #eaf4ff;
+  border: 1px solid #cfe2ff;
+  border-radius: 8px;
+}
+
+.modern-input .input-group-text {
+  background: #f8f9fa;
+  border-right: none;
+}
+
+.modern-input .form-control {
+  border-left: none;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+  border: none;
+  transition: 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #0b5ed7, #0a58ca);
+}
