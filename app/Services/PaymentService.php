@@ -1,43 +1,36 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Services;
 
 use App\Models\Installment;
-use App\Services\PaymentService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
+use App\Models\PaymentTransaction;
 
-class ProcessDueInstallmentsJob implements ShouldQueue
+class PaymentService
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    /**
-     * Execute the job.
-     */
-    public function handle(PaymentService $paymentService)
+    public function processInstallment(Installment $installment): bool
     {
-        $dueInstallments = Installment::where('status', 'pending')
-            ->where('due_date', '<=', now())
-            ->with('loan')
-            ->get();
-
-        foreach ($dueInstallments as $installment) {
-            try {
-                $result = $paymentService->processInstallment($installment);
-
-                if (!$result) {
-                    Log::info("Skipped installment {$installment->id} — already processed or failed");
-                }
-            } catch (\Throwable $e) {
-                Log::error('Payment processing error', [
-                    'installment_id' => $installment->id,
-                    'error'          => $e->getMessage()
-                ]);
-            }
+        if ($installment->status !== 'pending') {
+            return false;
         }
+
+        // if ($installment->status === 'paid') {
+        //     return true;
+        // }
+        
+        // Simulate payment processing
+        $success = true;
+
+        if ($success) {
+            $installment->update(['status' => 'paid', 'paid_at' => now()]);
+
+            PaymentTransaction::create([
+                'installment_id' => $installment->id,
+                'amount' => $installment->amount,
+                'processed_at' => now(),
+                'status' => 'success'
+            ]);
+        }
+
+        return $success;
     }
 }

@@ -19,5 +19,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        \App\Models\Loan::factory()
+        ->for(\App\Models\Customer::factory())
+        ->has(\App\Models\Installment::factory()->count(3))
+        ->create();
+
     }
 }

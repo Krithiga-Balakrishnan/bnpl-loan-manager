@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GenerateLoanRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\Loan;
 use App\Models\Installment;
 use Carbon\Carbon;
@@ -77,6 +78,8 @@ class LoanController extends Controller
             broadcast(new \App\Events\LoanStatusUpdated($loan));
 
             return response()->json(['loan' => $loan]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Loan not found'], 404);
         } catch (\Exception $e) {
             \Log::error("Update Loan Status Failed: ".$e->getMessage());
             return response()->json(['message' => 'Failed to update status'], 500);
