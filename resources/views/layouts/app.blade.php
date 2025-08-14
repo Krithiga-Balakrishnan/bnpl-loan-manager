@@ -18,6 +18,7 @@
             </button>
         </div>
     </nav>
+    
 
     <main class="container">
         @yield('content')

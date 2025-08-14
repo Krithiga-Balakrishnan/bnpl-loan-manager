@@ -66,7 +66,7 @@ function updateLoanRow(loan) {
                     <button class="btn btn-sm btn-outline-primary edit-update-btn">Edit</button>
                 </td>
             `;
-            tbody.prepend(tr);
+            tbody.appendChild(tr);
         } else {
             tr.querySelector('.paid-count').textContent = `${paid.length} / ${installments.length}`;
             tr.querySelector('.paid-sum').textContent = totalPaid.toFixed(2);

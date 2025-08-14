@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Installment;
 use App\Models\PaymentTransaction;
 use Illuminate\Support\Facades\DB;
+use App\Mail\PaymentConfirmationMail;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\PayInstallmentRequest;
 
 
@@ -14,8 +16,11 @@ class PaymentController extends Controller
     // public function pay(Installment $installment)
     public function pay(PayInstallmentRequest $request, $id)
     {
-        try {
-            DB::transaction(function () use ($id) {
+try {
+        $loan = null;
+        $inst = null;
+
+        DB::transaction(function () use ($id, &$loan, &$inst) {
             // Lock the installment row
             $inst = Installment::lockForUpdate()->findOrFail($id);
 
@@ -32,42 +37,66 @@ class PaymentController extends Controller
                     'paid_at' => now()
                 ]);
 
-                PaymentTransaction::create([
-                    'installment_id' => $inst->id,
-                    'amount' => $inst->amount,
-                    'processed_at' => now(),
-                    'status' => 'success',
-                ]);
+                // PaymentTransaction::create([
+                //     'installment_id' => $inst->id,
+                //     'amount'         => $inst->amount,
+                //     'processed_at'   => now(),
+                //     'status'         => 'success',
+                // ]);
 
-                // Broadcast event
-                $loan = $inst->loan->fresh(['installments']);
-                if ($loan->installments->where('status', 'pending')->isEmpty()) {
-                    $loan->update(['status' => 'completed']);
-                    event(new \App\Events\LoanCompleted($loan));
-                }
+                // $loan = $inst->loan->fresh(['installments']);
 
+                // if ($loan->installments->where('status', 'pending')->isEmpty()) {
+                //     $loan->update(['status' => 'completed']);
+                //     event(new \App\Events\LoanCompleted($loan));
+                // }
+
+                $payment = PaymentTransaction::create([
+        'installment_id' => $inst->id,
+        'amount'         => $inst->amount,
+        'processed_at'   => now(),
+        'status'         => 'success',
+    ]);
+
+    $loan = $inst->loan->fresh(['installments']);
+
+    if ($loan->installments->where('status', 'pending')->isEmpty()) {
+        $loan->update(['status' => 'completed']);
+        event(new \App\Events\LoanCompleted($loan));
+    }
                 event(new \App\Events\InstallmentPaid($inst->load('loan.installments')));
+                // Send email
+                Mail::to($loan->customer->email)
+                    ->send(new PaymentConfirmationMail($payment, $loan));
             } else {
                 $inst->update(['status' => 'failed']);
 
                 PaymentTransaction::create([
                     'installment_id' => $inst->id,
-                    'amount' => $inst->amount,
-                    'processed_at' => now(),
-                    'status' => 'failed',
+                    'amount'         => $inst->amount,
+                    'processed_at'   => now(),
+                    'status'         => 'failed',
                 ]);
 
                 abort(500, 'Payment failed');
             }
         });
 
-        return response()->json(['message' => 'Installment paid'], 200);
-        } catch (\Exception $e) {
-            \Log::error("Pay Installment Failed: ".$e->getMessage());
-            return response()->json([
-                'message' => 'Error',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Installment paid',
+            'loan' => $loan, // full loan with updated installments
+            'installment' => [
+                'amount'       => $inst->amount,
+                'processed_at' => now()->toDateTimeString(),
+            ]
+        ], 200);
+
+    } catch (\Exception $e) {
+        \Log::error("Pay Installment Failed: " . $e->getMessage());
+        return response()->json([
+            'message' => 'Error',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
     }
 }

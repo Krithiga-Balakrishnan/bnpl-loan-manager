@@ -11,7 +11,8 @@ use Illuminate\Http\Request;
 use App\Events\LoanGenerated;
 use App\Http\Requests\UpdateLoanStatusRequest;
 use App\Events\LoanStatusUpdated;
-
+use App\Models\PaymentTransaction;
+use App\Models\Customer;
 
 class LoanController extends Controller
 {
@@ -19,7 +20,10 @@ class LoanController extends Controller
     {
          try {
         $validated = $request->validated();
-
+        $customer = Customer::find($validated['customer_id']);
+        if (!$customer) {
+            return response()->json(['error' => 'Customer not found'], 404);
+        }
         $installmentsPerLoan = $validated['installments_per_loan'] ?? 4;
         $installmentPeriod = $validated['installment_period_minutes'] ?? 60;
 
@@ -28,6 +32,7 @@ class LoanController extends Controller
         DB::transaction(function () use ($validated, $installmentsPerLoan, $installmentPeriod, &$loans) {
             for ($i = 0; $i < $validated['number_of_loans']; $i++) {
                 $loan = Loan::create([
+                    'customer_id' => $validated['customer_id'],
                     'amount' => $validated['loan_amount'],
                     'status' => 'active',
                 ]);
@@ -63,20 +68,6 @@ class LoanController extends Controller
     }
 }
 
-    // public function updateStatus(UpdateLoanStatusRequest $request, $id)
-    // {
-    //     $loan = Loan::findOrFail($id);
-    //     $loan->status = $request->status;
-    //     $loan->save();
-
-    //     // Broadcast event
-    //     event(new LoanStatusUpdated($loan));
-
-    //     return response()->json([
-    //         'message' => 'Loan status updated',
-    //         'loan' => $loan->load('installments')
-    //     ]);
-    // }
     public function updateStatus(UpdateLoanStatusRequest $request, $id)
     {
         try {
@@ -91,6 +82,31 @@ class LoanController extends Controller
             \Log::error("Update Loan Status Failed: ".$e->getMessage());
             return response()->json(['message' => 'Failed to update status'], 500);
         }
+    }
+
+    public function getPayments()
+    {
+        try {
+            $payments = PaymentTransaction::with('installment.loan')
+                ->where('status', 'success')
+                ->get();
+
+            return response()->json($payments);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
+
+    public function getLoanStatusCounts()
+    {
+        return response()->json([
+            'active' => Loan::where('status', 'active')->count(),
+            'completed' => Loan::where('status', 'completed')->count(),
+            'cancelled' => Loan::where('status', 'cancelled')->count()
+        ]);
     }
 
 

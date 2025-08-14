@@ -7,7 +7,7 @@
 
     <form id="loanForm" class="border p-4 rounded shadow-sm bg-light needs-validation" novalidate>
         @csrf
-
+        <input type="hidden" id="loanCustomerId" name="customer_id">
         <div class="mb-3">
             <label class="form-label">Loan Amount</label>
             <input type="number" step="0.01" class="form-control" name="loan_amount" required min="0.01">
@@ -61,6 +61,7 @@ document.getElementById('loanForm').addEventListener('submit', function(e) {
     }
 
     const data = {
+        customer_id: document.getElementById('loanCustomerId').value,
         loan_amount: form.loan_amount.value,
         number_of_loans: form.number_of_loans.value,
         installments_per_loan: form.installments_per_loan.value || 4,

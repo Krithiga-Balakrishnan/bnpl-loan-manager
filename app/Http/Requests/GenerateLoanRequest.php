@@ -26,6 +26,7 @@ class GenerateLoanRequest extends FormRequest
         return [
             //
             // 'loan_amount' => 'required|numeric|min:1',
+            'customer_id' => 'required|exists:customers,id',
             'loan_amount'       => ['required', 'numeric', 'min:0.01', 'regex:/^\d+(\.\d{1,2})?$/'],
             'number_of_loans' => 'required|integer|min:1',
             'installments_per_loan' => 'nullable|integer|min:1',
