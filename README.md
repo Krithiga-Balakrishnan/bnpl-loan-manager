@@ -1,61 +1,156 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BNPL (Buy Now Pay Later) Platform - Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A simplified **Buy Now Pay Later (BNPL)** platform built with Laravel that demonstrates **loan generation**, **installment scheduling**, **real-time payment processing**, and **automated payment jobs**.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Backend API
+- **Loan Management API**
+  - Generate loans with configurable installments and periods
+  - Update loan statuses
+  - Fetch loan payments and status counts
+- **Customer Management API**
+  - Create, update, and list customers
+- **Installment Payment API**
+  - Pay installments manually
+  - Prevent duplicate payments
+  - Auto-complete loans when all installments are paid
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Frontend Interface
+- **Loan Generation Page**
+  - Form to input loan parameters
+  - Responsive UI (Bootstrap 5)
+  - Client-side and server-side validation
+- **Loan Dashboard**
+  - View all loans with status, amounts, installments, and next payment due date
+  - Search and filter functionality 
+  - Email notification to the customer
+  - Data visualization for payment trends and loan count based on status
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. Real-time Updates
+- Powered by **Laravel WebSockets** / Pusher
+- Dashboard updates instantly when:
+  - Loans are generated
+  - Installments are paid
+  - Loan status changes
+- Events: `LoanGenerated`, `InstallmentPaid`, `LoanCompleted`
 
-## Learning Laravel
+### 4. Background Job Processing
+- Scheduled job runs every **10 minutes**
+- Processes **due installments** automatically
+- Updates statuses, dispatches events, and logs results
+- Handles payment failures gracefully with retry support
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Tech Stack
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend:** Laravel 12
+- **PHP Version:** 8.2
+- **Frontend:** Blade templates + Bootstrap 5 
+- **JavaScript & Build Tools:** Vite 5, Axios, Laravel Vite Plugin
+- **Real-time:** Laravel Echo + Pusher JS
+- **Queue:** Laravel Database Queue
+- **Mail:** Laravel Mailable 
+- **Testing:** PHPUnit 11
+---
 
-## Laravel Sponsors
+## Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/laravel-bnpl.git
+cd laravel-bnpl
+```
 
-### Premium Partners
+### 2. Install Dependencies
+```bash
+composer install
+npm install
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Environment Setup
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+Configure the following in `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bnpl
+DB_USERNAME=root
+DB_PASSWORD=
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+BROADCAST_DRIVER=pusher
+QUEUE_CONNECTION=database
+```
 
-## Code of Conduct
+For **Pusher/WebSockets**, add:
+```env
+PUSHER_APP_ID=your-app-id
+PUSHER_APP_KEY=your-key
+PUSHER_APP_SECRET=your-secret
+PUSHER_APP_CLUSTER=mt1
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Database Migration
+```bash
+php artisan migrate
+php artisan db:seed 
+```
 
-## Security Vulnerabilities
+### 5. Run Queues & Scheduler
+```bash
+php artisan queue:work
+php artisan schedule:work
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 6. Start WebSocket Server (if using Laravel WebSockets)
+```bash
+soketi start
+```
 
-## License
+### 7. Serve the Application
+```bash
+php artisan serve
+npm run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## API Endpoints
+
+### **Customer Management**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/customers` | Create a new customer |
+| PATCH  | `/api/customers/{id}` | Update customer details |
+| GET    | `/api/customers` | Get all customers |
+
+### **Loan Management**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/loans/generate` | Generate loans |
+| PATCH  | `/api/loans/{loan}/status` | Update loan status |
+| GET    | `/api/loans/payments` | Get all loan payments |
+| GET    | `/api/loans/status-counts` | Loan counts by status |
+
+### **Installment Payments**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/installments/{installment}/pay` | Pay a pending installment |
+
+---
+
+## Demo Video
+[Click here to watch the demo](#) *(Replace with your demo link)*
+
+---
+
+## Author
+**Krithiga D. Balakrishnan** 
+[GitHub](https://github.com/Krithiga-Balakrishnan) • [Portfolio](https://krithiga-balakrishnan.vercel.app) 
+
