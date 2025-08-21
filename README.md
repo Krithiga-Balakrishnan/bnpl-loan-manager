@@ -145,11 +145,6 @@ npm run dev
 
 ---
 
-## Demo Video
-[Click here to watch the dem](https://drive.google.com/file/d/1aTZZ8CjyCcBoxQKz8-oR7sV798zSEHat/view?usp=sharing)
-
----
-
 ## Author
 **Krithiga D. Balakrishnan** 
 [GitHub](https://github.com/Krithiga-Balakrishnan) • [Portfolio](https://krithiga-balakrishnan.vercel.app) 
